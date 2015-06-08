@@ -12,23 +12,24 @@ import java.util.UUID;
 public class Maze {
     private MazePosition _startingPosition;
     private MazePosition _endingPosition;
-    private String _id;
+    private String _id = UUID.randomUUID().toString();
     private String _solvedBy;
     private Date _createdTime = new Date();
     private Date _solvedTime;
-    private final char[][] _area;
+    private char[][] _area;
 
     private boolean _solved = false;
 
+    public final static char WALL_CHAR = '#';
+    public final static char OPEN_CHAR = ' ';
+    public final static char UNUSED_CHAR = '+';
 
     public Maze(){
-        _id = UUID.randomUUID().toString();
-        _area = new char[50][50];
+        initializeMaze(20,10);
     }
 
     public Maze(int x, int y){
-        _id = UUID.randomUUID().toString();
-        _area = new char[x][y];
+        initializeMaze(x,y);
     }
 
     public String getId(){
@@ -47,11 +48,11 @@ public class Maze {
     }
 
     public boolean isValidPosition(MazePosition position) {
-        if ( position.getXPosition() < 0 || position.getXPosition() > _area.length )
+        if ( position.getYPosition() < 0 || position.getYPosition() > _area.length )
             return false;
-        if ( position.getYPosition() < 0 || position.getYPosition() > _area[0].length )
+        if ( position.getXPosition() < 0 || position.getXPosition() > _area[0].length )
             return false;
-        if ( _area[position.getXPosition()][position.getYPosition()] == '#' )
+        if ( _area[position.getYPosition()][position.getXPosition()] == WALL_CHAR )
             return false;
         return true;
     }
@@ -117,4 +118,50 @@ public class Maze {
         builder.append("}");
         return builder.toString();
     }
+
+    private void initializeMaze(int x, int y) {
+        if (x < 0) x = 20;
+        if (y < 0) y = 10;
+        if (x > 100) x = 20;
+        if (y > 100) y = 10;
+        _area = new char[y][x];
+
+        for ( int i = 0; i < y; ++i ){
+            _area[i][0] = WALL_CHAR;
+            _area[i][x-1] = WALL_CHAR;
+        }
+        for ( int i = 0; i < x; ++i ){
+            _area[0][i] = WALL_CHAR;
+            _area[y-1][i] = WALL_CHAR;
+        }
+        for (int i = 0; i < y; ++i)
+            for (int j = 0; j < x; ++j)
+                if ( (i == 0 || i == y-1) || (j == 0 || j == x-1) )
+                    _area[i][j] = WALL_CHAR;
+                else _area[i][j] = UNUSED_CHAR;
+    }
+
+    public Maze makePrintReady() {
+        for (int i = 0; i < _area.length; ++i)
+            for (int j = 0; j < _area[0].length; ++j)
+                if (_area[i][j] == UNUSED_CHAR)
+                    _area[i][j] = OPEN_CHAR;
+        return this;
+    }
+
+    public static String convertToString(char[][] area){
+       StringBuilder builder = new StringBuilder();
+        for ( char[] array : area  ) {
+            for (char point : array)
+                builder.append(point);
+            builder.append("\n");
+        }
+        return builder.toString();
+    }
+
+    @Override
+    public String toString(){
+        return convertToString(_area);
+    }
+
 }
