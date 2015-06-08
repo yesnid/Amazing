@@ -21,9 +21,9 @@ GET:
 
 
 POST:
-        /move?id=foo&direction={North,East,South,West}&maze=id => is a request to move from the current position in the direction given, will return {242} if the maze is solved.
+       /move?id=foo&direction={North,East,South,West}&maze=id => is a request to move from the current position in the direction given, will return {242} if the maze is solved.
 
-        /create?width={#}&height={#} => creates a new maze.
+       /create?width={#}&height={#} => creates a new maze.
 
 The flow is as follows:
 
