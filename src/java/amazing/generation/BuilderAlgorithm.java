@@ -38,7 +38,6 @@ public enum  BuilderAlgorithm {
         }
 
         private List<Door> fillIn(char[][] canvas, int width, int height, int xOrigin, int yOrigin, String type) {
-//            System.out.println(String.format("[%s] Fill in width[%d], height[%d], xOrigin[%d], yOrigin[%d]",type,width,height,xOrigin,yOrigin));
             if ( width < 3 || height < 3 )
                 return new ArrayList<Door>();
             int wallOnYAxis = (height != 3 ) ? randomInRange(yOrigin+1,height+yOrigin-1) : yOrigin+1;
@@ -52,11 +51,6 @@ public enum  BuilderAlgorithm {
                     new Wall(wallOnXAxis+1,wallOnYAxis,width+xOrigin,wallOnYAxis))//Right
             );
 
-//            System.out.println("Y Axis wall: "+wallOnYAxis);
-//            System.out.println("X Axis wall: "+wallOnXAxis);
-//            for ( Wall e : walls )
-//                System.out.println(e);
-
             for ( int i = yOrigin; i < height+yOrigin; ++i ) {
                 canvas[i][wallOnXAxis] = Maze.WALL_CHAR;
             }
@@ -69,18 +63,14 @@ public enum  BuilderAlgorithm {
             List<Door> doors = new ArrayList<Door>();
             do{
                 Wall wallE =  walls.remove(walls.size() > 1 ? randomInRange(0,walls.size()) : 0);
-//                if ( wallE.length() < 3) continue;
                 int xPos = wallE.isVerticalWall() ? wallE.getEndingPoint().getXPosition() : randomInRange(wallE.getStartingPoint().getXPosition(),wallE.getEndingPoint().getXPosition());
                 int yPos = wallE.isHorizontalWall() ? wallE.getEndingPoint().getYPosition() : randomInRange(wallE.getStartingPoint().getYPosition(),wallE.getEndingPoint().getYPosition());
-//                System.out.println(String.format("xPos[%d]yPos[%d], wall:%s",xPos,yPos,wallE));
                 Door doorway = new Door(new MazePosition(xPos,yPos),wallE.isHorizontalWall());
                 canvas[yPos][xPos]=Maze.OPEN_CHAR;
                 doors.add(doorway);
             }while( !walls.isEmpty() && doors.size() < 3 );
-//            System.out.println("HolePunch Count:"+holePunchCount);
 
 
-//            System.out.println(Maze.convertToString(canvas));
             //Top Left
             doors.addAll(fillIn(canvas,wallOnXAxis-xOrigin,wallOnYAxis-yOrigin,xOrigin,yOrigin,type+":TopLeft"));
             //Top Right
@@ -97,7 +87,6 @@ public enum  BuilderAlgorithm {
 
     //Number between min(inclusive) and Max(exlusive)
     static public int randomInRange(int min, int max){
-//        System.out.println(String.format("Random in range[%d->%d]",min,max));
         if (min == max) return min;
         return _random.nextInt(max-min)+min;
     }
@@ -109,7 +98,9 @@ public enum  BuilderAlgorithm {
     }
 
     public Maze create(int width, int height){
-        return _builder.create(width,height);
+        int clippedWidth = width < 10 || width > 100 ? 20 : width;
+        int clippedHeight = height < 10 || height > 100 ? 10 : height;
+        return _builder.create(clippedWidth,clippedHeight);
     }
 
     public static BuilderAlgorithm getAlgorithm(String name) throws UnknownAlgorithm {

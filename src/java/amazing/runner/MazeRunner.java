@@ -93,7 +93,9 @@ public enum MazeRunner {
         return builder.append("]").toString();
     }
 
-    public String create(int width, int height, String algorithm) throws UnknownAlgorithm {
+    public String create(int width, int height, String algorithm) throws AmazingException {
+        if ( _mazes.size() > 10 )
+            throw new AmazingException(400,"Too Many Mazes Active");
         Maze maze = BuilderAlgorithm.getAlgorithm(algorithm).create(width, height);
         _mazes.put(maze.getId(),maze);
         return maze.getId();

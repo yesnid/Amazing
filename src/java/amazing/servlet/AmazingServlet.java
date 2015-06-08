@@ -65,6 +65,12 @@ public class AmazingServlet extends HttpServlet {
                 String result = MazeRunner.instance.query(id, maze, QueryTypes.valueOf(type));
                 response.getWriter().write(result);
             }
+        }catch (IllegalArgumentException e){
+            response.getWriter().write(e.toString());
+            response.setStatus(400);
+        }catch (NullPointerException e){
+            response.getWriter().write(e.toString());
+            response.setStatus(400);
         } catch (AmazingException e) {
             response.getWriter().write(e.getResponseText());
             response.setStatus(e.getHttpStatus());
@@ -89,6 +95,12 @@ public class AmazingServlet extends HttpServlet {
                 int height = Integer.valueOf(request.getParameter("height"));
                 response.getWriter().write(MazeRunner.instance.create(width, height, null));
             }
+        }catch (IllegalArgumentException e){
+            response.getWriter().write(e.toString());
+            response.setStatus(400);
+        }catch (NullPointerException e){
+            response.getWriter().write(e.toString());
+            response.setStatus(400);
         }catch (AmazingException e){
             response.getWriter().write(e.getResponseText());
             response.setStatus(e.getHttpStatus());
