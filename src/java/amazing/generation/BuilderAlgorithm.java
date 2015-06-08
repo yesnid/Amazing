@@ -1,7 +1,9 @@
 package amazing.generation;
 
 import amazing.exceptions.UnknownAlgorithm;
+import amazing.model.Door;
 import amazing.model.Maze;
+import amazing.model.MazePosition;
 import amazing.model.Wall;
 
 import java.util.ArrayList;
@@ -18,14 +20,27 @@ public enum  BuilderAlgorithm {
         @Override
         public Maze create(int width, int height) {
             Maze maze = new Maze(width,height);
-            fillIn(maze.getCanvas(),width-2,height-2,1,1,"Whole");
-            return maze.makePrintReady();
+            fillIn(maze.getCanvas(),width-2,height-2);
+            return maze.chooseStartAndEndPositions();
         }
 
-        private void fillIn(char[][] canvas, int width, int height, int xOrigin, int yOrigin, String type) {
+        private void fillIn(char[][] canvas, int width, int height) {
+            List<Door> doors = fillIn(canvas,width,height,1,1,"whole");
+            for ( Door door : doors ){
+                if ( door.isInHorizontalWall() ){
+                    canvas[door.getDoorPosition().getYPosition()-1][door.getDoorPosition().getXPosition()] = Maze.OPEN_CHAR;
+                    canvas[door.getDoorPosition().getYPosition()+1][door.getDoorPosition().getXPosition()] = Maze.OPEN_CHAR;
+                }else{
+                    canvas[door.getDoorPosition().getYPosition()][door.getDoorPosition().getXPosition()+1] = Maze.OPEN_CHAR;
+                    canvas[door.getDoorPosition().getYPosition()][door.getDoorPosition().getXPosition()-1] = Maze.OPEN_CHAR;
+                }
+            }
+        }
+
+        private List<Door> fillIn(char[][] canvas, int width, int height, int xOrigin, int yOrigin, String type) {
 //            System.out.println(String.format("[%s] Fill in width[%d], height[%d], xOrigin[%d], yOrigin[%d]",type,width,height,xOrigin,yOrigin));
             if ( width < 3 || height < 3 )
-                return;
+                return new ArrayList<Door>();
             int wallOnYAxis = (height != 3 ) ? randomInRange(yOrigin+1,height+yOrigin-1) : yOrigin+1;
             int wallOnXAxis = (width != 3 ) ? randomInRange(xOrigin+1,width+xOrigin-1) : xOrigin+1;
 
@@ -36,7 +51,6 @@ public enum  BuilderAlgorithm {
                     new Wall(xOrigin,wallOnYAxis,wallOnXAxis,wallOnYAxis),//LEft
                     new Wall(wallOnXAxis+1,wallOnYAxis,width+xOrigin,wallOnYAxis))//Right
             );
-
 
 //            System.out.println("Y Axis wall: "+wallOnYAxis);
 //            System.out.println("X Axis wall: "+wallOnXAxis);
@@ -52,28 +66,30 @@ public enum  BuilderAlgorithm {
 
 
             //Punch Holes
-            int holePunchCount = 0;
+            List<Door> doors = new ArrayList<Door>();
             do{
                 Wall wallE =  walls.remove(walls.size() > 1 ? randomInRange(0,walls.size()) : 0);
 //                if ( wallE.length() < 3) continue;
                 int xPos = wallE.isVerticalWall() ? wallE.getEndingPoint().getXPosition() : randomInRange(wallE.getStartingPoint().getXPosition(),wallE.getEndingPoint().getXPosition());
                 int yPos = wallE.isHorizontalWall() ? wallE.getEndingPoint().getYPosition() : randomInRange(wallE.getStartingPoint().getYPosition(),wallE.getEndingPoint().getYPosition());
 //                System.out.println(String.format("xPos[%d]yPos[%d], wall:%s",xPos,yPos,wallE));
+                Door doorway = new Door(new MazePosition(xPos,yPos),wallE.isHorizontalWall());
                 canvas[yPos][xPos]=Maze.OPEN_CHAR;
-                holePunchCount++;
-            }while( !walls.isEmpty() && holePunchCount < 3 );
+                doors.add(doorway);
+            }while( !walls.isEmpty() && doors.size() < 3 );
 //            System.out.println("HolePunch Count:"+holePunchCount);
 
 
 //            System.out.println(Maze.convertToString(canvas));
             //Top Left
-            fillIn(canvas,wallOnXAxis-xOrigin,wallOnYAxis-yOrigin,xOrigin,yOrigin,type+":TopLeft");
+            doors.addAll(fillIn(canvas,wallOnXAxis-xOrigin,wallOnYAxis-yOrigin,xOrigin,yOrigin,type+":TopLeft"));
             //Top Right
-            fillIn(canvas,width-((wallOnXAxis-xOrigin)+1),wallOnYAxis-yOrigin,wallOnXAxis+1,yOrigin,type+":TopRight");
+            doors.addAll(fillIn(canvas,width-((wallOnXAxis-xOrigin)+1),wallOnYAxis-yOrigin,wallOnXAxis+1,yOrigin,type+":TopRight"));
             //Bottom Right
-            fillIn(canvas, width - ((wallOnXAxis - xOrigin) + 1), height - ((wallOnYAxis - yOrigin) + 1), wallOnXAxis + 1, wallOnYAxis + 1, type + ":BottomRight");
+            doors.addAll(fillIn(canvas, width - ((wallOnXAxis - xOrigin) + 1), height - ((wallOnYAxis - yOrigin) + 1), wallOnXAxis + 1, wallOnYAxis + 1, type + ":BottomRight"));
             //Bottom Left
-            fillIn(canvas,wallOnXAxis-xOrigin,height-((wallOnYAxis-yOrigin)+1),xOrigin,wallOnYAxis+1,type+":BottomLeft");
+            doors.addAll(fillIn(canvas,wallOnXAxis-xOrigin,height-((wallOnYAxis-yOrigin)+1),xOrigin,wallOnYAxis+1,type+":BottomLeft"));
+            return doors;
         }
     });
 

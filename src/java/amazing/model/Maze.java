@@ -2,6 +2,7 @@ package amazing.model;
 
 import amazing.exceptions.AlreadySolved;
 import amazing.exceptions.InvalidMove;
+import amazing.generation.BuilderAlgorithm;
 
 import java.util.Date;
 import java.util.UUID;
@@ -23,6 +24,8 @@ public class Maze {
     public final static char WALL_CHAR = '#';
     public final static char OPEN_CHAR = ' ';
     public final static char UNUSED_CHAR = '+';
+    public final static char START_CHAR = '*';
+    public final static char END_CHAR = 'X';
 
     public Maze(){
         initializeMaze(20,10);
@@ -141,7 +144,21 @@ public class Maze {
                 else _area[i][j] = UNUSED_CHAR;
     }
 
-    public Maze makePrintReady() {
+    public Maze chooseStartAndEndPositions() {
+        makePrintReady();
+        MazePosition position = null;
+        do {
+            position = new MazePosition(BuilderAlgorithm.randomInRange(1, _area[0].length), BuilderAlgorithm.randomInRange(1, _area.length));
+        } while (!isValidPosition(position));
+        setStartingPoistion(position);
+        do {
+            position = new MazePosition(BuilderAlgorithm.randomInRange(1, _area[0].length), BuilderAlgorithm.randomInRange(1, _area.length));
+        } while (!isValidPosition(position));
+        setEndingPoistion(position);
+        return this;
+    }
+
+    private Maze makePrintReady() {
         for (int i = 0; i < _area.length; ++i)
             for (int j = 0; j < _area[0].length; ++j)
                 if (_area[i][j] == UNUSED_CHAR)
@@ -164,4 +181,13 @@ public class Maze {
         return convertToString(_area);
     }
 
+    public void setStartingPoistion(MazePosition startingPosition) {
+        _startingPosition = startingPosition;
+        _area[_startingPosition.getYPosition()][_startingPosition.getXPosition()] = Maze.START_CHAR;
+    }
+
+    public void setEndingPoistion(MazePosition endingPosition) {
+        _endingPosition = endingPosition;
+        _area[_endingPosition.getYPosition()][_endingPosition.getXPosition()] = Maze.END_CHAR;
+    }
 }
