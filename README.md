@@ -39,6 +39,7 @@ The flow is as follows:
 
 
 Return codes:
+
     - 4XX Bad Request
         -- 420 Maze already solved you are too late
         -- 421 invalid move
