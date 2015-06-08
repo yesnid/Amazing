@@ -11,6 +11,7 @@ The following are the supported URLs
 
 
 GET:
+
        /mazestart?id={foo}&maze={id} => is a request to start the maze for your passed id. This will return a MazePosition json in the body.
 
        /currentview?id={foo}&maze={id} => is a request to know what each adjacent space looks like (e.g wall or open), This will return a view object in the body as json.
@@ -21,6 +22,7 @@ GET:
 
 
 POST:
+
        /move?id=foo&direction={North,East,South,West}&maze=id => is a request to move from the current position in the direction given, will return {242} if the maze is solved.
 
        /create?width={#}&height={#} => creates a new maze.
