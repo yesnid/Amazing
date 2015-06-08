@@ -5,18 +5,41 @@ import amazing.generation.BuilderAlgorithm;
 import amazing.model.*;
 import amazing.servlet.AmazingServlet;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by nsimi on 6/1/15.
  */
-public enum MazeRunner {
+public enum MazeRunner implements Runnable{
     instance;
 
     private final HashMap<String,SolverStatus> _solvers = new HashMap<String, SolverStatus>();
-
     private Map<String,Maze> _mazes = new HashMap<String, Maze>();
+    private ScheduledExecutorService _executorService = Executors.newScheduledThreadPool(1);
+
+
+    private MazeRunner(){
+        _executorService.scheduleAtFixedRate(this,300,300, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public void run() {
+        Date now = new Date();
+        List<String> toBeRemoved = new ArrayList<String>();
+        for ( Map.Entry<String,Maze> entry : _mazes.entrySet() ){
+            if ( entry.getValue().isSolved() && (now.getTime() - entry.getValue().getSolvedTime().getTime()) > 300 )
+                toBeRemoved.add(entry.getKey());
+        }
+        for (String key : toBeRemoved )
+            _mazes.remove(key);
+    }
 
     public boolean isKnownSolver(String solverId){
         return _solvers.containsKey(solverId);
@@ -39,8 +62,10 @@ public enum MazeRunner {
 
     }
 
-    public MazePosition addSolver(String solverId, String mazeId) throws MazeNotValid, SolverIdAlreadyInUse {
+    public MazePosition addSolver(String solverId, String mazeId) throws MazeNotValid, SolverIdAlreadyInUse, TooManyActiveSolvers {
         validateUnknown(solverId, mazeId);
+        if ( _solvers.size() > 1000 )
+            throw new TooManyActiveSolvers();
         _solvers.put(solverId,new SolverStatus(solverId,_mazes.get(mazeId)));
         return _solvers.get(solverId).getCurrentPosition();
     }
@@ -50,8 +75,10 @@ public enum MazeRunner {
         SolverStatus status = _solvers.get(solverId);
         MazePosition newPosition = direction.applyDirection(status.getCurrentPosition(),_mazes.get(mazeId));
         status.setNewPosition(newPosition);
-        if ( _mazes.get(mazeId).IsSolved(status) )
+        if ( _mazes.get(mazeId).IsSolved(status) ) {
+            _solvers.remove(solverId);
             throw new Solved(mazeId);
+        }
     }
 
 
@@ -93,9 +120,9 @@ public enum MazeRunner {
         return builder.append("]").toString();
     }
 
-    public String create(int width, int height, String algorithm) throws AmazingException {
+    public String create(int width, int height, String algorithm) throws TooManyActiveMazes, UnknownAlgorithm {
         if ( _mazes.size() > 10 )
-            throw new AmazingException(400,"Too Many Mazes Active");
+            throw new TooManyActiveMazes();
         Maze maze = BuilderAlgorithm.getAlgorithm(algorithm).create(width, height);
         _mazes.put(maze.getId(),maze);
         return maze.getId();
