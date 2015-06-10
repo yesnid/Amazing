@@ -1,6 +1,4 @@
-/*
- * Copyright (c) 2015 Rhythm NewMedia
- */
+
 package amazing.model;
 
 /**
