@@ -4,7 +4,7 @@ Maze Puzzle Hosting Server
 Originally developed as a C++ application that would DL open solver libraries,
 I have moved this to a Java Servlet that now generates and hosts mazes.
 
-The idea is that you can use this as teaching or teambuilding tool. Write a solver in anylanguage, and point it at the
+The idea is that you can use this as teaching or teambuilding tool. Write a solver in any language, and point it at the
 server to solve the mazes.
 
 The following are the supported URLs
@@ -81,3 +81,7 @@ Example Maze:
         #   ## ## ### #### ######## #########    #
         # # #   #   # #                     #  # #
         ##########################################
+        
+        
+Feature Ideas
+ - http://www.playfuljs.com/a-first-person-engine-in-265-lines/ use this to render a view of your solve
